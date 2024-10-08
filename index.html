@@ -69,21 +69,29 @@
             addMessage("User", userMessage);
             userInput.value = "";
 
-            // Send brugerens input til OpenAI API
-            const response = await fetch("https://api.openai.com/v1/assistants/asst_3dwX2tgtQn2cc4ncSzQKAzWg/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer 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`
-                },
-                body: JSON.stringify({
-                    messages: [{"role": "user", "content": userMessage}]
-                })
-            });
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer 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`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4", // Eller brug din model-id
+                        messages: [{"role": "user", "content": userMessage}]
+                    })
+                });
 
-            const data = await response.json();
-            const botMessage = data.choices[0].message.content;
-            addMessage("Chatbot", botMessage);
+                const data = await response.json();
+                if (response.ok) {
+                    const botMessage = data.choices[0].message.content;
+                    addMessage("Chatbot", botMessage);
+                } else {
+                    addMessage("Error", `Fejl: ${data.error.message}`);
+                }
+            } catch (error) {
+                addMessage("Error", "Der opstod en fejl ved API-anmodningen.");
+            }
         });
 
         function addMessage(sender, message) {
